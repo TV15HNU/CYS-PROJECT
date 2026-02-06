@@ -1,0 +1,15 @@
+# Datasets
+PhishingProjectFinal/datasets/
+PhishingProject/datasets/
+StealthPhisher/StealthPhisher.csv
+Dataset of 1000 Images of Malicious and Benign QR codes 2025/
+*.zip
+*.csv
+!PhishingProjectFinal/performance_metrics.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv
+env/
+venv/
