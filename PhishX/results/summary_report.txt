@@ -1,0 +1,15 @@
+PhishX Research Experiment Summary
+==================================
+
+Generated on: Tue Feb 24 16:56:54 2026
+Test Set: scientific_test_set.csv (1000 samples)
+Leakage Protection: Domain-level splitting used.
+
+Folders:
+- baseline_comparison: Overall precision/recall/F1 vs baselines.
+- imbalance_evaluation: Robustness to realistic benign/malicious ratios.
+- robustness_analysis: Evidence of model reliability shifting under attack.
+- calibration_analysis: Reliability diagrams and Brier scores.
+- computational_analysis: Performance tradeoffs for Monte Carlo inference.
+
+Regeneration: Run 'python PhishX/train/generate_publication_results.py'

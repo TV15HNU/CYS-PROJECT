@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishX | Advanced AI QR Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --bg: #030712;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: #f3f4f6;
+            margin: 0;
+            overflow-x: hidden;
+            background: radial-gradient(circle at top right, #1e1b4b, #030712);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .scanner-container {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid #334155;
+            background: #000;
+        }
+
+        #video {
+            width: 100%;
+            height: auto;
+            transform: scaleX(-1);
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.6);
+            border-radius: 1rem;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 2.5s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            opacity: 0.9;
+        }
+
+        .results-panel {
+            display: none;
+        }
+
+        .score-box {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .safe {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .info-pill {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.25rem;
+        }
+
+        .explanation-item {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #d1d5db;
+        }
+
+        .explanation-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>PhishX</h1>
+        <p class="tagline">Transformer-Powered QR Intelligence System</p>
+
+        <div class="grid">
+            <div class="card">
+                <div class="scanner-container">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="scan-overlay">
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                <button id="capture-btn" class="btn">ANALYZE QR CODE</button>
+            </div>
+
+            <div class="card" style="min-height: 400px;">
+                <div id="welcome-msg" style="text-align: center; margin-top: 5rem;">
+                    <p style="color: #6b7280;">Waiting for scan...</p>
+                </div>
+
+                <div id="results-panel" class="results-panel">
+                    <div id="score-box" class="score-box">
+                        <h2 id="verdict-text" style="margin: 0;">Legitimate</h2>
+                        <p id="score-text" style="font-size: 0.9rem; margin-top: 0.5rem;">Confidence: 0.92</p>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; color: #9ca3af; text-transform: uppercase;">Destination URL</h3>
+                        <p id="url-display" style="word-break: break-all; opacity: 0.8; font-family: monospace;"></p>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; color: #9ca3af; text-transform: uppercase;">AI Explanation</h3>
+                        <div id="explanation-list"></div>
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 1rem; color: #9ca3af; text-transform: uppercase;">Deep Insight</h3>
+                        <div id="pills">
+                            <span class="info-pill" id="t-score">Transformer: 0.0</span>
+                            <span class="info-pill" id="c-score">CNN: 0.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureBtn = document.getElementById('capture-btn');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const resultsPanel = document.getElementById('results-panel');
+        const verdictText = document.getElementById('verdict-text');
+        const scoreText = document.getElementById('score-text');
+        const urlDisplay = document.getElementById('url-display');
+        const explanationList = document.getElementById('explanation-list');
+        const scoreBox = document.getElementById('score-box');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => alert("Camera access denied."));
+
+        captureBtn.addEventListener('click', async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            captureBtn.innerText = "Processing...";
+            captureBtn.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    welcomeMsg.style.display = 'none';
+                    resultsPanel.style.display = 'block';
+
+                    urlDisplay.innerText = data.url;
+                    verdictText.innerText = data.prediction;
+
+                    // NEW: Primary Risk Score
+                    scoreText.innerText = `Ensemble Risk: ${(data.risk_score * 100).toFixed(2)}%`;
+
+                    scoreBox.className = data.prediction === "Phishing" ? "score-box danger" : "score-box safe";
+
+                    // Update Detailed Metrics
+                    document.getElementById('t-score').innerText = `Transformer: ${data.transformer_confidence}`;
+                    document.getElementById('c-score').innerText = `CNN: ${data.cnn_confidence}`;
+
+                    // Add Uncertainty Pill if not already there, or update it
+                    let uPill = document.getElementById('u-score');
+                    if (!uPill) {
+                        const pillsDiv = document.getElementById('pills');
+                        uPill = document.createElement('span');
+                        uPill.id = 'u-score';
+                        uPill.className = 'info-pill';
+                        style = "border: 1px solid #fbbf24; color: #fbbf24;"; // Yellow for uncertainty alert
+                        uPill.setAttribute('style', style);
+                        pillsDiv.appendChild(uPill);
+                    }
+                    uPill.innerText = `Uncertainty: ${data.uncertainty_score}`;
+
+                    explanationList.innerHTML = data.explanation.map(item => `<div class="explanation-item">${item}</div>`).join('');
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Server error processing request.");
+            } finally {
+                captureBtn.innerText = "ANALYZE QR CODE";
+                captureBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

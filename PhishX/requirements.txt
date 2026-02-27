@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+torch
+transformers
+torchvision
+pandas
+numpy
+scikit-learn
+opencv-python
+pyzbar
+requests
+beautifulsoup4
+matplotlib
+seaborn
+tqdm
+python-multipart
+jinja2
