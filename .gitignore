@@ -13,3 +13,12 @@ __pycache__/
 .venv
 env/
 venv/
+
+# Large Files (Models & Data)
+*.npy
+*.pth
+*.pt
+*.pkl
+*.h5
+*.onnx
+runs/

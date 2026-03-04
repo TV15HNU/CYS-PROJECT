@@ -1,0 +1,10 @@
+# PhishX v2 Ignored Files
+uploads/
+__pycache__/
+*.log
+*.pt
+check_out.txt
+check_out.txt
+*.csv
+# If you don't want to push models (large files):
+# core/original_models/

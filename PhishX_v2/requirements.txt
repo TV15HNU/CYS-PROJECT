@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+opencv-python
+numpy
+pyzbar
+pyzxing
+requests
+torch
+transformers
+pandas
+scikit-learn
+pydantic

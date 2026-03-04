@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishX v2 | AI QR Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --accent: #c084fc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1000px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 850px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .camera-section,
+        .results-section {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .scan-frame {
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+        }
+
+        .controls {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .verdict-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-none {
+            background: #334155;
+            color: white;
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-block {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .result-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s;
+        }
+
+        #explanationContainer div {
+            margin-top: 0.5rem;
+            border-left: 2px solid var(--primary);
+            padding-left: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>PhishX v2</h1>
+        <p class="subtitle">Original PhishX Intelligence + Robust QR Extraction</p>
+    </header>
+    <main>
+        <section class="camera-section">
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="scanner-overlay">
+                    <div class="scan-frame">
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="captureBtn">Capture & Analyze</button>
+            </div>
+            <canvas id="canvas" style="display:none"></canvas>
+        </section>
+        <section class="results-section">
+            <div class="results-header">
+                <h2>Analysis Result</h2>
+                <div id="verdictBadge" class="verdict-badge badge-none">Waiting...</div>
+            </div>
+            <div class="result-item"><span class="label">Extracted URL</span>
+                <div id="urlText" class="value">---</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="label">Risk Score</span>
+                    <div id="riskValue" class="value">0%</div>
+                    <div class="score-bar">
+                        <div id="riskBar" class="score-fill"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Uncertainty</span>
+                    <div id="uncertaintyValue" class="value">0%</div>
+                    <div class="score-bar">
+                        <div id="uncertaintyBar" class="score-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="result-item" style="margin-top: 1.5rem;">
+                <span class="label">Detection Logic Explanation</span>
+                <div id="explanationContainer" class="value"
+                    style="font-size: 0.9rem; font-weight: 300; line-height: 1.4; color: var(--text-dim);">---</div>
+            </div>
+            <div class="result-item" style="margin-top: 2rem;">
+                <span class="label">Final Action</span>
+                <div id="actionText" class="value" style="font-size: 1.6rem; letter-spacing: 0.1em;">---</div>
+            </div>
+        </section>
+    </main>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const urlText = document.getElementById('urlText');
+        const riskValue = document.getElementById('riskValue');
+        const riskBar = document.getElementById('riskBar');
+        const uncertaintyValue = document.getElementById('uncertaintyValue');
+        const uncertaintyBar = document.getElementById('uncertaintyBar');
+        const verdictBadge = document.getElementById('verdictBadge');
+        const actionText = document.getElementById('actionText');
+        const explanationContainer = document.getElementById('explanationContainer');
+
+        async function setupCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+            } catch (err) { alert("Camera access required."); }
+        }
+        setupCamera();
+
+        captureBtn.addEventListener('click', async () => {
+            captureBtn.disabled = true; resetUI();
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('file', blob, 'scan.jpg');
+                try {
+                    const response = await fetch('/scan', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.status === 'success') { updateUI(data); }
+                    else { alert(data.message || "Decoding failed"); resetUI("FAILED"); }
+                } catch (err) { alert("Server connection error."); }
+                finally { captureBtn.disabled = false; }
+            }, 'image/jpeg', 0.8);
+        });
+
+        function updateUI(data) {
+            urlText.innerText = data.url;
+            const riskPct = (data.risk_score * 100).toFixed(1);
+            riskValue.innerText = riskPct + "%";
+            riskBar.style.width = riskPct + "%";
+            riskBar.style.background = data.risk_score > 0.5 ? 'var(--danger)' : 'var(--success)';
+
+            const uncPct = (data.uncertainty * 100).toFixed(1);
+            uncertaintyValue.innerText = uncPct + "%";
+            uncertaintyBar.style.width = uncPct + "%";
+            uncertaintyBar.style.background = data.uncertainty > 0.05 ? 'var(--warning)' : 'var(--primary)';
+
+            explanationContainer.innerHTML = data.explanation.map(exp => `<div>${exp}</div>`).join('');
+            actionText.innerText = data.action.toUpperCase();
+
+            verdictBadge.className = 'verdict-badge';
+            if (data.prediction.toLowerCase() === 'phishing') {
+                verdictBadge.innerText = 'PHISHING'; verdictBadge.classList.add('badge-block');
+                actionText.style.color = 'var(--danger)';
+            } else if (data.action.includes('Review')) {
+                verdictBadge.innerText = 'SUSPICIOUS'; verdictBadge.classList.add('badge-warning');
+                actionText.style.color = 'var(--warning)';
+            } else {
+                verdictBadge.innerText = 'SAFE'; verdictBadge.classList.add('badge-safe');
+                actionText.style.color = 'var(--success)';
+            }
+        }
+
+        function resetUI(status = "Waiting...") {
+            urlText.innerText = "---"; riskValue.innerText = "0%"; riskBar.style.width = "0%";
+            uncertaintyValue.innerText = "0%"; uncertaintyBar.style.width = "0%";
+            actionText.innerText = "---"; explanationContainer.innerHTML = "---";
+            verdictBadge.innerText = status; verdictBadge.className = 'verdict-badge badge-none';
+        }
+    </script>
+</body>
+
+</html>
